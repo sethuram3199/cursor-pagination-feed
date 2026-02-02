@@ -1,46 +1,69 @@
 "use client";
 
-import { Drawer, IconButton, List, ListItemButton, ListItemText, Box } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { Box, List, ListItemButton, ListItemIcon, ListItemText, IconButton, Tooltip } from "@mui/material";
+import KeyboardDoubleArrowLeftIcon from "@mui/icons-material/KeyboardDoubleArrowLeft";
+import KeyboardDoubleArrowRightIcon from "@mui/icons-material/KeyboardDoubleArrowRight";
+import ListAltIcon from "@mui/icons-material/ListAlt";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 
-const drawerWidth = 240;
+const SIDEBAR_WIDTH = 240;
+const SIDEBAR_COLLAPSED_WIDTH = 64;
 
-export default function Sidebar() {
-  const [open, setOpen] = useState(false);
+export default function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const goTo = (path: string) => {
-    router.push(path);
-    setOpen(false);
-  };
-
-  return (
-    <>
-      <IconButton onClick={() => setOpen(true)} sx={{ position: "fixed", top: 16, left: 16, zIndex: 1201 }}>
-        <MenuIcon />
-      </IconButton>
-
-      <Drawer
-        open={open}
-        onClose={() => setOpen(false)}
-        variant="temporary"
+  const item = (
+    <ListItemButton
+      selected={pathname === "/activity-log"}
+      onClick={() => router.push("/activity-log")}
+      sx={{
+        justifyContent: collapsed ? "center" : "flex-start",
+        px: collapsed ? 1.5 : 2,
+      }}
+    >
+      <ListItemIcon
         sx={{
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-          },
+          minWidth: 0,
+          mr: collapsed ? 0 : 2,
+          justifyContent: "center",
         }}
       >
-        <Box p={2}>
-          <List>
-            <ListItemButton selected={pathname === "/activity-log"} onClick={() => goTo("/activity-log")}>
-              <ListItemText primary="Activity Log" />
-            </ListItemButton>
-          </List>
-        </Box>
-      </Drawer>
-    </>
+        <ListAltIcon />
+      </ListItemIcon>
+
+      {!collapsed && <ListItemText primary="Activity Log" />}
+    </ListItemButton>
+  );
+
+  return (
+    <Box
+      sx={{
+        width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH,
+        transition: "width 0.2s ease",
+        borderRight: "1px solid #E5E7EB",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* Toggle */}
+      <Box display="flex" justifyContent={collapsed ? "center" : "flex-end"} p={1}>
+        <IconButton onClick={onToggle} size="small">
+          {collapsed ? <KeyboardDoubleArrowRightIcon /> : <KeyboardDoubleArrowLeftIcon />}
+        </IconButton>
+      </Box>
+
+      {/* Navigation */}
+      <List>
+        {collapsed ? (
+          <Tooltip title="Activity Log" placement="right">
+            {item}
+          </Tooltip>
+        ) : (
+          item
+        )}
+      </List>
+    </Box>
   );
 }
