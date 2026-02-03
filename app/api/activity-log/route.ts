@@ -1,9 +1,11 @@
-import { BASE_ACTIVITY_LOGS } from "@/components/mock";
+import { generateActivityLogs } from "@/components/mock";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
+  const logs = generateActivityLogs(30);
+
   return NextResponse.json({
-    items: BASE_ACTIVITY_LOGS,
+    items: logs,
     nextCursor: null,
   });
 }

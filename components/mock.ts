@@ -35,3 +35,28 @@ export const BASE_ACTIVITY_LOGS = [
     summary: "Ownership transferred to John Doe",
   },
 ];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function generateActivityLogs(total: number) {
+  const logs = [];
+  const baseSize = BASE_ACTIVITY_LOGS.length;
+
+  for (let i = 0; i < total; i++) {
+    const baseIndex = i % baseSize;
+    const sliceIndex = Math.floor(i / baseSize);
+
+    const base = BASE_ACTIVITY_LOGS[baseIndex];
+
+    const baseTime = new Date(base.timestamp).getTime();
+    const shiftedTime = new Date(baseTime - sliceIndex * DAY_MS).toISOString();
+
+    logs.push({
+      ...base,
+      id: String(i + 1),
+      timestamp: shiftedTime,
+    });
+  }
+
+  return logs;
+}
