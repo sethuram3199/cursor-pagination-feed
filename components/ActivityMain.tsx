@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Box, Typography, Divider, Skeleton } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
+import { Box, Typography, Divider, Skeleton, CircularProgress } from "@mui/material";
+import { useCursorFeed } from "./hooks/useCursorFeed";
 
 /**
  * Temporary activity type (API-agnostic)
@@ -29,103 +30,59 @@ function ActivityRowSkeleton() {
   );
 }
 
-export default function ActivityMain() {
-  const [loading, setLoading] = useState(true);
-  const [logs, setLogs] = useState<ActivityLog[]>([]);
+export default function ActivityLogPage() {
+  const { items, isLoading, fetchNext, hasMore } = useCursorFeed();
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  /**
-   * Simulated fetch (replace later with cursor pagination hook)
-   */
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLogs([
-        {
-          id: 1,
-          time: "10:12 AM",
-          user: "John Doe",
-          action: "Updated",
-          description: "Patient profile details",
-        },
-        {
-          id: 2,
-          time: "09:45 AM",
-          user: "Jane Smith",
-          action: "Created",
-          description: "New lab request",
-        },
-      ]);
-      setLoading(false);
-    }, 800);
+    if (!sentinelRef.current || !hasMore) return;
 
-    return () => clearTimeout(timer);
-  }, []);
-
-  /**
-   * 1️⃣ Initial loading → row skeletons
-   */
-  if (loading) {
-    return (
-      <Box display="flex" flexDirection="column" gap={3}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <ActivityRowSkeleton key={i} />
-        ))}
-      </Box>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          fetchNext();
+        }
+      },
+      { threshold: 1 },
     );
-  }
 
-  /**
-   * 2️⃣ Empty state
-   */
-  if (!loading && logs.length === 0) {
-    return (
-      <Box mt={6} textAlign="center">
-        <Typography color="text.secondary">No activity found</Typography>
-      </Box>
-    );
-  }
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [fetchNext, isLoading, hasMore]);
 
-  /**
-   * 3️⃣ Render activity list
-   */
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
-      <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={2}>
-          <Typography variant="subtitle2" color="text.secondary">
-            Today
+    <Box p={3}>
+      <Typography variant="h5" mb={2}>
+        Car Activity Log
+      </Typography>
+
+      {items.map((item) => (
+        <Box
+          key={item.id}
+          sx={{
+            border: "1px solid #E5E7EB",
+            borderRadius: 2,
+            p: 2,
+            mb: 1.5,
+          }}
+        >
+          <Typography fontSize={12} color="text.secondary">
+            {new Date(item.timestamp).toLocaleString()}
           </Typography>
-          <Divider flexItem />
+
+          <Typography fontWeight={600}>{item.action}</Typography>
+
+          <Typography fontSize={14}>{item.summary}</Typography>
         </Box>
+      ))}
 
-        <Box display="flex" flexDirection="column" gap={3}>
-          {logs.map((log) => (
-            <Box key={log.id} display="flex" gap={2}>
-              <Typography variant="caption" color="text.secondary" sx={{ minWidth: 80 }}>
-                {log.time}
-              </Typography>
-
-              <Box flex={1}>
-                <Typography variant="body2" fontWeight={500}>
-                  {log.user}
-                </Typography>
-
-                <Box
-                  mt={0.5}
-                  p={1.5}
-                  sx={{
-                    backgroundColor: "#F5F5F5",
-                    borderRadius: 1,
-                  }}
-                >
-                  <Typography variant="body2">
-                    <strong>{log.action}</strong> — {log.description}
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          ))}
+      {isLoading && (
+        <Box display="flex" justifyContent="center" py={3}>
+          <CircularProgress size={24} />
         </Box>
-      </Box>
+      )}
+
+      <div ref={sentinelRef} />
     </Box>
   );
 }
