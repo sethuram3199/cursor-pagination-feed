@@ -10,7 +10,7 @@ export interface ActivityItem {
   summary: string;
 }
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
 const MAX_ITEMS = 200;
 
 export function useCursorFeed() {

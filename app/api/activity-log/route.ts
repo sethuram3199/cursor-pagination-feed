@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateActivityLogs } from "@/components/mock";
 
+const TOTAL_LOGS = 500;
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const limit = Number(searchParams.get("limit")) || 10;
   const cursor = searchParams.get("cursor");
 
-  const allLogs = generateActivityLogs(50);
+  const allLogs = generateActivityLogs(TOTAL_LOGS);
 
   const sortedLogs = allLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 

@@ -4,16 +4,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { Box, Typography, Divider, Skeleton, CircularProgress } from "@mui/material";
 import { useCursorFeed } from "./hooks/useCursorFeed";
 
-/**
- * Temporary activity type (API-agnostic)
- */
-interface ActivityLog {
-  id: number;
-  time: string;
-  user: string;
-  action: string;
-  description: string;
-}
 
 /**
  * Row-level skeleton (inline for now to avoid extra files)
